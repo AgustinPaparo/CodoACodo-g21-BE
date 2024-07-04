@@ -1,11 +1,16 @@
-.idea/
-.vscode/
-.venv*/
-venv*/
+# Virtualenv
+venv/
+
+# Byte-compiled / optimized files
 __pycache__/
-dist/
-.coverage*
-htmlcov/
-.tox/
-docs/_build/
+*.py[cod]
+
+# Environment variables
 .env
+
+# IDE files (ejemplo para VS Code)
+.vscode/
+
+# Logs and databases
+*.log
+*.sqlite
