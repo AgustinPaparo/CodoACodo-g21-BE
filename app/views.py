@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.utils import secure_filename
 from conf import *
 from .models import Property
 from .utils import delete_from_github, upload_photos_to_github
@@ -35,17 +34,16 @@ def update_property(prop_id):
 
     data = request.json
 
-    property.propietario_id = data["propietario_id"],
-    property.direccion = data["direccion"],
-    property.tipo = data["tipo"],
-    property.habitaciones = data["habitaciones"],
-    property.banos = data["banos"],
-    property.tamano = data["tamano"],
-    property.cochera = data["cochera"],
-    property.precio = data["precio"],
-    property.estado = data["estado"],
-    property.tipo_contrato = data["tipo_contrato"],
-    property.imagenes = data["imagenes"]
+    property.propietario_id = data["propietario_id"]
+    property.direccion = data["direccion"]
+    property.tipo = data["tipo"]
+    property.habitaciones = data["habitaciones"]
+    property.banos = data["banos"]
+    property.tamano = data["tamano"]
+    property.cochera = data["cochera"]
+    property.precio = data["precio"]
+    property.estado = data["estado"]
+    property.tipo_contrato = data["tipo_contrato"]
 
     property.save()
 
