@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
 from conf import *
 from .models import Property
+from .utils import delete_from_github, upload_photos_to_github
 
 
 bp = Blueprint("views", __name__)
@@ -20,35 +22,6 @@ def all_properties():
     serialized_properties = [p.serialize() for p in propiedades]
 
     return serialized_properties
-
-
-@bp.route("/api/new_property", methods=["POST"])
-def new_property():
-    """Ingresa una nueva propidad a la DB"""
-
-    data = request.json
-
-    new_property = Property(
-        propietario_id=data["propietario_id"],
-        direccion=data["direccion"],
-        tipo=data["tipo"],
-        habitaciones=data["habitaciones"],
-        banos=data["banos"],
-        tamano=data["tamano"],
-        cochera=data["cochera"],
-        precio=data["precio"],
-        estado=data["estado"],
-        tipo_contrato=data["tipo_contrato"],
-        imagenes= [],
-    )
-
-    try:
-        new_property.save()
-    except Exception as e:
-        print(e)
-        return jsonify({"error": e}), 415
-
-    return jsonify({"message": "Task created successfully"}), 201
 
 
 @bp.route("/api/update_property/<int:prop_id>", methods=["PUT"])
@@ -98,6 +71,65 @@ def delete_property(prop_id):
     property = Property.get_property_by_id(prop_id)
     if not property:
         return jsonify({'message': 'Property not found'}), 404
+    
+    formatted_direccion = property.direccion.replace(" ", "_")
+    directory_name = f"{property.propietario_id}-{formatted_direccion}"
+    
+    for image_path in property.imagenes:
+        try:
+            path = f'{directory_name}/{image_path.strip()}'
+            delete_from_github(path)
+        except Exception as e:
+            print(path)
+            print(e)
+            return jsonify({'message': f'Error deleting image from GitHub: {str(e)}'}), 500
 
     property.delete()
     return jsonify({'message': 'Property deleted successfully'})
+
+
+@bp.route("/api/new_property", methods=["POST"])
+def new_property():
+    propietario_id = request.form['propietario_id']
+    direccion = request.form['direccion']
+    tipo = request.form['tipo']
+    habitaciones = request.form['habitaciones']
+    banos = request.form['banos']
+    tamano = request.form['tamano']
+    cochera = request.form.get('cochera') == 'true'
+    precio = request.form['precio']
+    estado = request.form['estado']
+    tipo_contrato = request.form['tipo_contrato']
+
+    photos = request.files.getlist('photos')
+    
+    # enviar las fotos a que le cambie el nombre y luego las almacene en github
+    try:
+        array_photos_path = upload_photos_to_github(photos, propietario_id, direccion)
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+    new_property = Property(
+        propietario_id=propietario_id,
+        direccion=direccion,
+        tipo=tipo,
+        habitaciones=habitaciones,
+        banos=banos,
+        tamano=tamano,
+        cochera=cochera,
+        precio=precio,
+        estado=estado,
+        tipo_contrato=tipo_contrato,
+        imagenes= array_photos_path,
+    )
+
+    try:
+        new_property.save()
+    except Exception as e:
+        print(e)
+        return jsonify({"error": e}), 415
+
+
+    return jsonify({"message": "Task created successfully"}), 201
+
+

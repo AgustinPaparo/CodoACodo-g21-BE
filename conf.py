@@ -57,7 +57,7 @@ def create_table_properties():
             banos INT NOT NULL,
             tamano DECIMAL(10, 2) NOT NULL,
             cochera BOOLEAN NOT NULL,
-            precio DECIMAL(12, 2) NOT NULL,
+            precio INT NOT NULL,
             estado VARCHAR(20) NOT NULL,
             tipo_contrato VARCHAR(50) NOT NULL,
             imagenes VARCHAR(255)[],

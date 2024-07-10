@@ -1,4 +1,3 @@
-from flask import jsonify
 from conf import get_db
 
 
@@ -153,6 +152,12 @@ class Property:
         cursor.execute("DELETE FROM properties WHERE id = %s", (self.id,))
         db.commit()
         cursor.close()
+
+    def get_fotos(self):
+        if self.imagenes:
+            return self.imagenes
+        else:
+            return []
 
     def serialize(self):
         return {
